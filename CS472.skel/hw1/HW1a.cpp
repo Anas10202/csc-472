@@ -152,5 +152,5 @@ HW1a::controlPanel()
 	QGroupBox *groupBox = new QGroupBox("Homework 1a");
 	groupBox->setStyleSheet(GroupBoxStyle);
 
-    return (groupBox);
+    return(groupBox);
 }
