@@ -56,6 +56,22 @@ void
 HW1b::resizeGL(int w, int h)
 {
 	// PUT YOUR CODE HERE
+	// compute aspect ratio
+	float ar = (float) w / h;
+	// set xmax, ymax
+	float xmax, ymax;
+	if(ar > 1.0) { // wide screen
+	xmax = ar;
+	ymax = 1.;
+	} else { // tall screen
+	xmax = 1.;
+	ymax = 1/ar;
+	}
+	// set viewport to occupy full canvas
+	glViewport(0, 0, w, h);
+	// init viewing coordinates for orthographic projection
+	glLoadIdentity();
+	glOrtho(-xmax, xmax, -ymax, ymax, -1.0, 1.0);
 }
 
 
@@ -68,7 +84,15 @@ HW1b::resizeGL(int w, int h)
 void
 HW1b::paintGL()
 {
-	// PUT YOUR CODE HERE
+	glClear(GL_COLOR_BUFFER_BIT);
+	for(uint i=0, j=0; i<m_colors.size(); ++i) {
+	glColor3f(m_colors[i][0], m_colors[i][1], m_colors[i][2]);
+	glBegin(GL_TRIANGLES);
+	glVertex2f(m_points[j][0], m_points[j][1]); j++;
+	glVertex2f(m_points[j][0], m_points[j][1]); j++;
+	glVertex2f(m_points[j][0], m_points[j][1]); j++;
+	glEnd();
+	}
 }
 
 
@@ -206,6 +230,15 @@ void
 HW1b::divideTriangle(vec2 a, vec2 b, vec2 c, int count)
 {
 	// PUT YOUR CODE HERE
+	if(count > 0) {
+	vec2 ab = vec2((a[0]+b[0]) / 2.0, (a[1]+b[1]) / 2.0);
+	vec2 ac = vec2((a[0]+c[0]) / 2.0, (a[1]+c[1]) / 2.0);
+	vec2 bc = vec2((b[0]+c[0]) / 2.0, (b[1]+c[1]) / 2.0);
+	divideTriangle( a, ab, ac, count-1);
+	divideTriangle( b, bc, ab, count-1);
+	divideTriangle( c, ac, bc, count-1);
+	divideTriangle(ab, ac, bc, count-1);
+	} else triangle(a, b, c);
 }
 
 
