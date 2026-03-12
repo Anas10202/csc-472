@@ -60,3 +60,7 @@ SOURCES +=	$$CS742PATH/main.cpp			\
 		$$CS742PATH/geometry/Scene.cpp		\
 		$$CS742PATH/lighting/Light.cpp		\
 		$$CS742PATH/camera/Camera.cpp
+
+CONFIG += sdk_no_version_check
+CONFIG += c++11
+QMAKE_MACOSX_DEPLOYMENT_TARGET = 26.3

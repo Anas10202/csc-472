@@ -35,6 +35,10 @@ HW2b::HW2b(const QGLFormat &glf, QWidget *parent) : HW(glf, parent)
 	m_twist = true;
 	m_modelview .setToIdentity();
 	m_projection.setToIdentity();
+
+	// init vertex and color buffer ids
+	m_vertexBuffer = 0;
+	m_colorBuffer = 0;
 }
 
 
@@ -53,6 +57,10 @@ HW2b::initializeGL()
 
 	// init vertex and fragment shaders
 	initShaders();
+
+	// generate gpu buffers
+	glGenBuffers(1, &m_vertexBuffer);
+	glGenBuffers(1, &m_colorBuffer);
 
 	// initialize vertex buffer and write positions to vertex shader
 	initVertexBuffer();
@@ -74,6 +82,23 @@ void
 HW2b::resizeGL(int w, int h)
 {
 	// PUT YOUR CODE HERE
+
+	m_winW = w;
+	m_winH = h;
+
+	// calculate aspect ratio
+	float ar = (float) w / h;
+	float xmax = 1.0f;
+	float ymax = 1.0f;
+
+	if (ar > 1.0f) {
+		xmax = ar;
+	} else {
+		ymax = 1.0f / ar;
+	}
+
+	m_projection.setToIdentity();
+	m_projection.ortho(-xmax, xmax, -ymax, ymax, -1.0f, 1.0f);
 }
 
 
@@ -87,6 +112,22 @@ void
 HW2b::paintGL()
 {
 	// PUT YOUR CODE HERE
+	m_modelview.setToIdentity();
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	
+	glUseProgram(m_program[HW2B].programId());
+
+	// sending projection and modelview to gpu
+	glUniformMatrix4fv(m_uniform[HW2B][PROJ], 1, GL_FALSE, m_projection.constData());
+	glUniformMatrix4fv(m_uniform[HW2B][MV], 1, GL_FALSE, m_modelview.constData());
+
+	// sending theta, twist, and subdivisions from slider to gpu directly
+	glUniform1f(m_uniform[HW2B][THETA], m_theta);
+	glUniform1i(m_uniform[HW2B][TWIST], m_twist);
+
+	glDrawArrays(GL_TRIANGLES, 0, m_numPoints);
+
 }
 
 
@@ -246,9 +287,17 @@ HW2b::initVertexBuffer()
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, m_numPoints*sizeof(vec2), &m_points[0], GL_STATIC_DRAW);
 
+	// wire buffer to a_position
+	glEnableVertexAttribArray(ATTRIB_VERTEX);
+	glVertexAttribPointer(ATTRIB_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
 	// bind color buffer to the GPU and copy the colors from CPU to GPU
 	glBindBuffer(GL_ARRAY_BUFFER, m_colorBuffer);
 	glBufferData(GL_ARRAY_BUFFER, m_numPoints*sizeof(vec3), &m_colors[0], GL_STATIC_DRAW);
+
+	// wire buffer to a_color
+	glEnableVertexAttribArray(ATTRIB_COLOR);
+	glVertexAttribPointer(ATTRIB_COLOR, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	// clear vertex and color vectors because they have already been copied into GPU
 	m_points.clear();
@@ -266,6 +315,21 @@ void
 HW2b::divideTriangle(vec2 a, vec2 b, vec2 c, int count)
 {
 	// PUT YOUR CODE HERE
+
+	if (count == 0) {
+		triangle(a,b,c);
+		return;
+	}
+	else if (count > 0) {
+		vec2 ab = (a + b) / 2.0f;
+		vec2 ac = (a + c) / 2.0f;
+		vec2 bc = (b + c) / 2.0f;
+
+		divideTriangle(ab, ac, bc, count - 1);
+		divideTriangle(a, ab, ac, count - 1);
+		divideTriangle(c, ac, bc, count - 1);
+		divideTriangle(b, ab, bc, count - 1);
+	}
 }
 
 
