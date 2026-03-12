@@ -295,6 +295,10 @@ HW2b::initVertexBuffer()
 	glBindBuffer(GL_ARRAY_BUFFER, m_colorBuffer);
 	glBufferData(GL_ARRAY_BUFFER, m_numPoints*sizeof(vec3), &m_colors[0], GL_STATIC_DRAW);
 
+	// wire buffer to a_color
+	glEnableVertexAttribArray(ATTRIB_COLOR);
+	glVertexAttribPointer(ATTRIB_COLOR, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
 	// clear vertex and color vectors because they have already been copied into GPU
 	m_points.clear();
 	m_colors.clear();
