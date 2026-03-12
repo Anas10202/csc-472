@@ -104,7 +104,9 @@ void
 HW2b::paintGL()
 {
 	// PUT YOUR CODE HERE
+	m_modelview.setToIdentity();
 	glClear(GL_COLOR_BUFFER_BIT);
+
 	
 	glUseProgram(m_program[HW2B].programId());
 
@@ -116,7 +118,7 @@ HW2b::paintGL()
 	glUniform1f(m_uniform[HW2B][THETA], m_theta);
 	glUniform1i(m_uniform[HW2B][TWIST], m_twist);
 
-	glDrawArrays(GL_TRIANGLES, 0, m_points.size());
+	glDrawArrays(GL_TRIANGLES, 0, m_numPoints);
 
 }
 
