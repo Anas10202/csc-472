@@ -35,6 +35,10 @@ HW2b::HW2b(const QGLFormat &glf, QWidget *parent) : HW(glf, parent)
 	m_twist = true;
 	m_modelview .setToIdentity();
 	m_projection.setToIdentity();
+
+	// init vertex and color buffer ids
+	m_vertexBuffer = 0;
+	m_colorBuffer = 0;
 }
 
 
@@ -53,6 +57,10 @@ HW2b::initializeGL()
 
 	// init vertex and fragment shaders
 	initShaders();
+
+	// generate gpu buffers
+	glGenBuffers(1, &m_vertexBuffer);
+	glGenBuffers(1, &m_colorBuffer);
 
 	// initialize vertex buffer and write positions to vertex shader
 	initVertexBuffer();
@@ -278,6 +286,10 @@ HW2b::initVertexBuffer()
 	// bind vertex buffer to the GPU and copy the vertices from CPU to GPU
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, m_numPoints*sizeof(vec2), &m_points[0], GL_STATIC_DRAW);
+
+	// wire buffer to a_position
+	glEnableVertexAttribArray(ATTRIB_VERTEX);
+	glVertexAttribPointer(ATTRIB_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 	// bind color buffer to the GPU and copy the colors from CPU to GPU
 	glBindBuffer(GL_ARRAY_BUFFER, m_colorBuffer);
