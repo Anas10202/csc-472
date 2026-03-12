@@ -13,4 +13,29 @@ uniform	int	u_Twist;	// Twist flag
 void main() 
 {
 	// PUT YOUR CODE HERE
+
+
+	// read position from center
+	float distance = length(a_Position);
+
+	// get color to fragment shader
+	v_Color = vec4(a_Color, 1.0);
+
+	// checking if Twist
+	float angle = u_Theta; // if false twist then angle = theta
+	if (u_Twist == 1) { // if true then final angle is theta * distance
+		angle = u_Theta * distance;
+	}
+
+
+	float s = sin(angle);
+	float c = cos(angle);
+	
+	// calculate x y positions using 2d rotation matrix
+	float x_final = a_Position.x * c - a_Position.y * s;
+	float y_final = a_Position.x * s + a_Position.y * c;
+
+	// gl position is new coordinates * projection * model view
+	gl_Position = u_Projection * u_Modelview * vec4(x_final, y_final, 0.0, 1.0);
+
 }

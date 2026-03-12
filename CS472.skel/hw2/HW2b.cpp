@@ -74,6 +74,23 @@ void
 HW2b::resizeGL(int w, int h)
 {
 	// PUT YOUR CODE HERE
+
+	m_winW = w;
+	m_winH = h;
+
+	// calculate aspect ratio
+	float ar = (float) w / h;
+	float xmax = 1.0f;
+	float ymax = 1.0f;
+
+	if (ar > 1.0f) {
+		xmax = ar;
+	} else {
+		ymax = 1.0f / ar;
+	}
+
+	m_projection.setToIdentity();
+	m_projection.ortho(-xmax, xmax, -ymax, ymax, -1.0f, 1.0f);
 }
 
 
@@ -87,6 +104,20 @@ void
 HW2b::paintGL()
 {
 	// PUT YOUR CODE HERE
+	glClear(GL_COLOR_BUFFER_BIT);
+	
+	glUseProgram(m_program[HW2B].programId());
+
+	// sending projection and modelview to gpu
+	glUniformMatrix4fv(m_uniform[HW2B][PROJ], 1, GL_FALSE, m_projection.constData());
+	glUniformMatrix4fv(m_uniform[HW2B][MV], 1, GL_FALSE, m_modelview.constData());
+
+	// sending theta, twist, and subdivisions from slider to gpu directly
+	glUniform1f(m_uniform[HW2B][THETA], m_theta);
+	glUniform1i(m_uniform[HW2B][TWIST], m_twist);
+
+	glDrawArrays(GL_TRIANGLES, 0, m_points.size());
+
 }
 
 
@@ -266,6 +297,21 @@ void
 HW2b::divideTriangle(vec2 a, vec2 b, vec2 c, int count)
 {
 	// PUT YOUR CODE HERE
+
+	if (count == 0) {
+		triangle(a,b,c);
+		return;
+	}
+	else if (count > 0) {
+		vec2 ab = (a + b) / 2.0f;
+		vec2 ac = (a + c) / 2.0f;
+		vec2 bc = (b + c) / 2.0f;
+
+		divideTriangle(ab, ac, bc, count - 1);
+		divideTriangle(a, ab, ac, count - 1);
+		divideTriangle(c, ac, bc, count - 1);
+		divideTriangle(b, ab, bc, count - 1);
+	}
 }
 
 

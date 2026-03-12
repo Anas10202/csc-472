@@ -72,6 +72,27 @@ void
 HW2a::resizeGL(int w, int h)
 {
 	// PUT YOUR CODE HERE
+	m_winW = w; // saving width and height
+	m_winH = h;
+
+	// figure out the aspect ratio
+	float ar = (float) w / h;
+	float xmax = 1.0f;
+	float ymax = 1.0f;
+
+	// setting aspect ratio by scaling x or y to ar
+	if (ar > 1.0) {
+		xmax = ar;
+	}
+	else {
+		ymax = 1.0f / ar;
+	}
+
+	// reset matrix to identity
+	m_projection.setToIdentity();
+
+	// set orthographic projection
+	m_projection.ortho(-xmax, xmax, -ymax, ymax, -1.0f, 1.0f);
 }
 
 
@@ -112,6 +133,26 @@ HW2a::paintGL()
 
 	// use glsl program
 	// PUT YOUR CODE HERE
+
+	// telling GPU which shaders to use
+	glUseProgram(m_program[HW2A].programId());
+
+	// sending camera logic to GPU
+	glUniformMatrix4fv(m_uniform[HW2A][PROJ], 1, GL_FALSE, m_projection.constData());
+
+	// setting up 3x3 grid
+	int modeIndex = 0;
+	for (int row = 0; row < 3; row++) {
+		for (int col = 0; col < 3; col++) {
+			// set each viewport
+			glViewport(col * w, row * h, w, h);
+
+			// tell GPU to render current mode buffer
+			glDrawArrays(DrawModes[modeIndex], 0, m_vertNum);
+
+			modeIndex++;
+		}
+	}
 
 	// disable vertex shader point size adjustment
 	glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
