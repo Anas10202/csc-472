@@ -64,3 +64,5 @@ SOURCES +=	$$CS742PATH/main.cpp			\
 CONFIG += sdk_no_version_check
 CONFIG += c++11
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 26.3
+
+QMAKE_LIBS_OPENGL = -framework OpenGL -framework AppKit
